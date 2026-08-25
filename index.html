@@ -2,10 +2,13 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
 <title>Portal Ujian</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
@@ -16,8 +19,8 @@ body {
     font-family: Arial, sans-serif;
     background: #eef2f7;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     color: #172033;
 }
 
@@ -66,6 +69,7 @@ button {
     font-size: 17px;
     font-weight: bold;
     cursor: pointer;
+    margin-top: 10px;
 }
 
 button:hover {
@@ -108,14 +112,14 @@ button:hover {
     border-radius: 12px;
 }
 
+.center {
+    text-align: center;
+}
+
 #halamanUjian,
 #halamanTerputus,
 #halamanSelesai {
     display: none;
-}
-
-.center {
-    text-align: center;
 }
 
 .qr-info {
@@ -125,6 +129,7 @@ button:hover {
     margin: 15px 0;
     font-size: 14px;
 }
+
 </style>
 </head>
 
@@ -132,9 +137,9 @@ button:hover {
 
 <div class="kartu">
 
-<!-- =========================
+<!-- =====================
      HALAMAN MASUK
-========================= -->
+===================== -->
 
 <div id="halamanAwal">
 
@@ -145,7 +150,7 @@ button:hover {
     </div>
 
     <div class="status">
-        🟢 UJIAN AKTIF
+        🟢 PORTAL AKTIF
     </div>
 
     <p>
@@ -154,28 +159,24 @@ button:hover {
 
     <div class="qr-info">
         <b>Kode Ujian:</b>
-        <span id="kodeUjian">UJIAN001</span>
+        <span id="kodeUjian">-</span>
     </div>
-
-    <p>
-        Portal ini dibuka melalui QR ujian.
-    </p>
 
     <button onclick="mulaiUjian()">
         MULAI UJIAN
     </button>
 
     <div class="info">
-        Setelah ujian dimulai, sistem akan mendeteksi
-        apabila halaman ujian ditinggalkan.
+        Selama ujian berlangsung jangan meninggalkan
+        halaman ujian atau menggunakan mode layar belah.
     </div>
 
 </div>
 
 
-<!-- =========================
+<!-- =====================
      HALAMAN UJIAN
-========================= -->
+===================== -->
 
 <div id="halamanUjian">
 
@@ -198,12 +199,23 @@ button:hover {
         30:00
     </div>
 
+    <div class="warning">
+        ⚠️ Jangan pindah aplikasi, jangan pindah tab,
+        dan jangan menggunakan layar belah.
+    </div>
+
+    <button onclick="bukaSoal()">
+        🔗 BUKA SOAL
+    </button>
+
     <div class="soal">
 
         <p>
-            <b>
+            <b>Contoh soal:</b>
+        </p>
+
+        <p>
             1. Berapakah hasil dari 2 + 2?
-            </b>
         </p>
 
         <div class="pilihan">
@@ -243,9 +255,9 @@ button:hover {
 </div>
 
 
-<!-- =========================
+<!-- =====================
      SESI TERPUTUS
-========================= -->
+===================== -->
 
 <div id="halamanTerputus">
 
@@ -258,30 +270,24 @@ button:hover {
         <h2>SESI TERPUTUS</h2>
 
         <div class="danger">
-            Anda telah meninggalkan halaman ujian.
+            Akses ujian telah dihentikan.
         </div>
 
         <div class="warning">
 
-            <b>Akses ujian dihentikan.</b>
+            Anda telah meninggalkan lingkungan
+            ujian atau ukuran layar berubah.
 
             <br><br>
 
-            Silakan scan QR ujian kembali
-            untuk memulai sesi baru.
+            Silakan <b>scan QR ujian kembali</b>
+            untuk masuk.
 
         </div>
 
         <p>
-            Jumlah keluar dari sesi:
+            Jumlah kejadian:
             <b id="jumlahKeluar">1</b>
-        </p>
-
-        <p>
-            <b>
-            Jangan gunakan tombol kembali untuk masuk
-            ke halaman soal.
-            </b>
         </p>
 
     </div>
@@ -289,9 +295,9 @@ button:hover {
 </div>
 
 
-<!-- =========================
+<!-- =====================
      SELESAI
-========================= -->
+===================== -->
 
 <div id="halamanSelesai">
 
@@ -304,12 +310,8 @@ button:hover {
         <h2>UJIAN SELESAI</h2>
 
         <p>
-            Jawaban Anda telah selesai dikerjakan.
-        </p>
-
-        <div class="status">
             Sesi ujian telah ditutup.
-        </div>
+        </p>
 
     </div>
 
@@ -320,20 +322,28 @@ button:hover {
 
 <script>
 
-/* =========================
+/* ==========================
    PENGATURAN
-========================= */
-
-const PARAMETER_UJIAN = "ujian";
-
-const KODE_DEFAULT = "UJIAN001";
+========================== */
 
 const DURASI_UJIAN = 30 * 60;
 
 
-/* =========================
+/*
+   Untuk sementara link soal
+   masih menggunakan contoh.
+
+   Nanti kita ganti dengan
+   link Google Drive guru.
+*/
+
+const LINK_SOAL =
+"https://drive.google.com";
+
+
+/* ==========================
    VARIABEL
-========================= */
+========================== */
 
 let kodeUjian = null;
 
@@ -346,17 +356,19 @@ let ujianAktif = false;
 let jumlahKeluar = 0;
 
 
-/* =========================
-   CEK QR / LINK UJIAN
-========================= */
+/* ==========================
+   CEK KODE QR
+========================== */
 
 function cekKodeUjian() {
 
     const parameter =
-        new URLSearchParams(window.location.search);
+        new URLSearchParams(
+            window.location.search
+        );
 
     kodeUjian =
-        parameter.get(PARAMETER_UJIAN);
+        parameter.get("ujian");
 
     if (!kodeUjian) {
 
@@ -367,10 +379,6 @@ function cekKodeUjian() {
         document.getElementById(
             "halamanTerputus"
         ).style.display = "block";
-
-        document.getElementById(
-            "jumlahKeluar"
-        ).innerText = "0";
 
         return false;
     }
@@ -383,9 +391,9 @@ function cekKodeUjian() {
 }
 
 
-/* =========================
+/* ==========================
    MULAI UJIAN
-========================= */
+========================== */
 
 function mulaiUjian() {
 
@@ -409,12 +417,22 @@ function mulaiUjian() {
         "kodeAktif"
     ).innerText = kodeUjian;
 
+    jalankanTimer();
+}
+
+
+/* ==========================
+   TIMER
+========================== */
+
+function jalankanTimer() {
+
+    clearInterval(interval);
+
     document.getElementById(
         "timer"
     ).innerText =
         formatWaktu(waktu);
-
-    clearInterval(interval);
 
     interval = setInterval(function() {
 
@@ -439,9 +457,9 @@ function mulaiUjian() {
 }
 
 
-/* =========================
-   FORMAT TIMER
-========================= */
+/* ==========================
+   FORMAT WAKTU
+========================== */
 
 function formatWaktu(detik) {
 
@@ -457,9 +475,9 @@ function formatWaktu(detik) {
 }
 
 
-/* =========================
-   DETEKSI KELUAR
-========================= */
+/* ==========================
+   DETEKSI PINDAH TAB
+========================== */
 
 document.addEventListener(
     "visibilitychange",
@@ -470,44 +488,138 @@ document.addEventListener(
             ujianAktif
         ) {
 
-            jumlahKeluar++;
-
-            localStorage.setItem(
-                "jumlahKeluar",
-                jumlahKeluar
+            putuskanSesi(
+                "Anda meninggalkan halaman ujian."
             );
 
-            ujianAktif = false;
-
-            clearInterval(interval);
-
-            document.getElementById(
-                "halamanUjian"
-            ).style.display = "none";
-
-            document.getElementById(
-                "halamanTerputus"
-            ).style.display = "block";
-
-            document.getElementById(
-                "jumlahKeluar"
-            ).innerText =
-                jumlahKeluar;
         }
 
     }
 );
 
 
-/* =========================
-   SELESAI MANUAL
-========================= */
+/* ==========================
+   DETEKSI UKURAN LAYAR
+========================== */
 
-function selesaiUjian() {
+let lebarAwal =
+    window.innerWidth;
+
+let tinggiAwal =
+    window.innerHeight;
+
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (!ujianAktif) {
+            return;
+        }
+
+        const lebarSekarang =
+            window.innerWidth;
+
+        const tinggiSekarang =
+            window.innerHeight;
+
+
+        const perubahanLebar =
+            Math.abs(
+                lebarSekarang - lebarAwal
+            );
+
+        const perubahanTinggi =
+            Math.abs(
+                tinggiSekarang - tinggiAwal
+            );
+
+
+        /*
+          Jika perubahan ukuran
+          sangat besar, kita anggap
+          lingkungan layar berubah.
+        */
+
+        const ambang =
+            Math.max(
+                150,
+                lebarAwal * 0.25
+            );
+
+
+        if (
+            perubahanLebar > ambang ||
+            perubahanTinggi > ambang
+        ) {
+
+            putuskanSesi(
+                "Perubahan ukuran layar terdeteksi."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================
+   PUTUSKAN SESI
+========================== */
+
+function putuskanSesi(pesan) {
+
+    if (!ujianAktif) {
+        return;
+    }
+
+    ujianAktif = false;
 
     clearInterval(interval);
 
+    jumlahKeluar++;
+
+    document.getElementById(
+        "halamanUjian"
+    ).style.display = "none";
+
+    document.getElementById(
+        "halamanTerputus"
+    ).style.display = "block";
+
+    document.getElementById(
+        "jumlahKeluar"
+    ).innerText =
+        jumlahKeluar;
+}
+
+
+/* ==========================
+   BUKA SOAL
+========================== */
+
+function bukaSoal() {
+
+    if (!ujianAktif) {
+        return;
+    }
+
+    window.open(
+        LINK_SOAL,
+        "_blank"
+    );
+}
+
+
+/* ==========================
+   SELESAI MANUAL
+========================== */
+
+function selesaiUjian() {
+
     ujianAktif = false;
+
+    clearInterval(interval);
 
     document.getElementById(
         "halamanUjian"
@@ -519,9 +631,9 @@ function selesaiUjian() {
 }
 
 
-/* =========================
+/* ==========================
    SELESAI KARENA WAKTU
-========================= */
+========================== */
 
 function selesaiKarenaWaktu() {
 
@@ -535,9 +647,9 @@ function selesaiKarenaWaktu() {
 }
 
 
-/* =========================
-   JALANKAN SAAT DIBUKA
-========================= */
+/* ==========================
+   MULAI
+========================== */
 
 cekKodeUjian();
 
