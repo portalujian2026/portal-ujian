@@ -138,7 +138,38 @@ button:hover {
     color: #667085;
 }
 
+.terputus {
+    text-align: center;
+    padding: 25px 10px;
+}
+
+.terputus-icon {
+    font-size: 60px;
+    margin-bottom: 10px;
+}
+
+.warning {
+    padding: 15px;
+    background: #fff3cd;
+    border-radius: 12px;
+    color: #664d03;
+    margin: 20px 0;
+    line-height: 1.5;
+}
+
+.danger {
+    padding: 15px;
+    background: #fde8e8;
+    color: #b42318;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
 #daftarJadwal {
+    display: none;
+}
+
+#halamanTerputus {
     display: none;
 }
 </style>
@@ -148,73 +179,114 @@ button:hover {
 
 <div class="kartu">
 
-    <h1>🏫 RUANG UJIAN</h1>
+    <!-- HALAMAN UTAMA -->
 
-    <div class="sub">
-        Portal Ujian Sekolah
+    <div id="halamanUtama">
+
+        <h1>🏫 RUANG UJIAN</h1>
+
+        <div class="sub">
+            Portal Ujian Sekolah
+        </div>
+
+        <div class="tanggal" id="tanggalHariIni">
+            Memuat tanggal...
+        </div>
+
+        <h3>Pilih Kelas</h3>
+
+        <div class="pilih-kelas">
+
+            <button onclick="pilihKelas('X')" id="btnX">
+                KELAS X
+            </button>
+
+            <button onclick="pilihKelas('XI')" id="btnXI">
+                KELAS XI
+            </button>
+
+            <button onclick="pilihKelas('XII')" id="btnXII">
+                KELAS XII
+            </button>
+
+        </div>
+
+        <div id="daftarJadwal">
+
+            <h3 id="judulKelas"></h3>
+
+            <div id="isiJadwal"></div>
+
+        </div>
+
+        <div class="info">
+
+            <b>Informasi:</b><br><br>
+
+            🔒 Belum dimulai = ujian belum dapat dibuka.<br>
+            🟢 Ujian aktif = soal dapat dibuka.<br>
+            🔴 Selesai = waktu ujian sudah habis dan soal tidak dapat dibuka.
+
+        </div>
+
     </div>
 
-    <div class="tanggal" id="tanggalHariIni">
-        Memuat tanggal...
-    </div>
 
-    <h3>Pilih Kelas</h3>
+    <!-- HALAMAN SESI TERPUTUS -->
 
-    <div class="pilih-kelas">
+    <div id="halamanTerputus">
 
-        <button onclick="pilihKelas('X')" id="btnX">
-            KELAS X
-        </button>
+        <div class="terputus">
 
-        <button onclick="pilihKelas('XI')" id="btnXI">
-            KELAS XI
-        </button>
+            <div class="terputus-icon">
+                🔒
+            </div>
 
-        <button onclick="pilihKelas('XII')" id="btnXII">
-            KELAS XII
-        </button>
+            <h2>SESI TERPUTUS</h2>
 
-    </div>
+            <div class="danger">
+                Akses ujian telah dihentikan.
+            </div>
 
-    <div id="daftarJadwal">
+            <div class="warning">
 
-        <h3 id="judulKelas"></h3>
+                Anda telah meninggalkan
+                halaman ujian.
 
-        <div id="isiJadwal"></div>
+                <br><br>
 
-    </div>
+                Silakan <b>scan QR ujian kembali</b>
+                untuk masuk kembali.
 
-    <div class="info">
-        <b>Informasi:</b><br><br>
+            </div>
 
-        🔒 Belum dimulai = ujian belum dapat dibuka.<br>
-        🟢 Ujian aktif = soal dapat dibuka.<br>
-        🔴 Selesai = waktu ujian sudah habis dan soal tidak dapat dibuka.
+            <p>
+                Sesi sebelumnya tidak dapat dilanjutkan.
+            </p>
+
+        </div>
+
     </div>
 
 </div>
+
 
 <script>
 
 /* ==================================================
    DATA JADWAL UJIAN
-   NANTI BAGIAN INI YANG MUDAH KITA EDIT
 ================================================== */
 
 const jadwalUjian = [
 
-    /*
-    SENIN
-    */
-
     {
-    tanggal: "2026-08-25",
-    kelas: "X",
-    mapel: "UJI COBA PORTAL",
-    mulai: "17:15",
-selesai: "17:25",
-    link: "https://forms.gle/1GCPekfDyv4WtfbW6"
-},
+        tanggal: "2026-08-25",
+        kelas: "X",
+        mapel: "UJI COBA PORTAL",
+        mulai: "17:15",
+        selesai: "17:25",
+        link: "https://forms.gle/1GCPekfDyv4WtfbW6"
+    },
 
     {
         tanggal: "2026-08-31",
@@ -251,11 +323,6 @@ selesai: "17:25",
         selesai: "11:00",
         link: "#"
     },
-
-
-    /*
-    SELASA
-    */
 
     {
         tanggal: "2026-09-01",
@@ -295,6 +362,94 @@ let kelasTerpilih = null;
 
 
 /* ==================================================
+   PENANDA SESI
+================================================== */
+
+/*
+   Kalau siswa sudah menekan BUKA SOAL,
+   portal menandai bahwa sesi ujian
+   sedang berlangsung.
+*/
+
+const KUNCI_SESI = "ruangUjianSesiAktif";
+
+
+/*
+   Jika QR memiliki parameter baru,
+   kita anggap siswa masuk kembali
+   melalui QR.
+
+   Contoh:
+   ?ujian=UJIAN001
+*/
+
+const parameterURL =
+    new URLSearchParams(
+        window.location.search
+    );
+
+const qrUjian =
+    parameterURL.get("ujian");
+
+
+/* ==================================================
+   CEK SESI LAMA
+================================================== */
+
+function cekSesiLama() {
+
+    const sesi =
+        sessionStorage.getItem(
+            KUNCI_SESI
+        );
+
+    /*
+       Jika ada sesi lama tetapi
+       URL tidak membawa kode QR,
+       jangan izinkan melanjutkan.
+    */
+
+    if (sesi && !qrUjian) {
+
+        tampilkanTerputus();
+
+        return true;
+    }
+
+    /*
+       Jika masuk menggunakan QR,
+       bersihkan sesi lama.
+    */
+
+    if (qrUjian) {
+
+        sessionStorage.removeItem(
+            KUNCI_SESI
+        );
+
+    }
+
+    return false;
+}
+
+
+/* ==================================================
+   TAMPILKAN SESI TERPUTUS
+================================================== */
+
+function tampilkanTerputus() {
+
+    document.getElementById(
+        "halamanUtama"
+    ).style.display = "none";
+
+    document.getElementById(
+        "halamanTerputus"
+    ).style.display = "block";
+}
+
+
+/* ==================================================
    TANGGAL HARI INI
 ================================================== */
 
@@ -306,14 +461,18 @@ function tanggalHariIni() {
         sekarang.getFullYear();
 
     const bulan =
-        String(sekarang.getMonth() + 1)
-        .padStart(2, "0");
+        String(
+            sekarang.getMonth() + 1
+        ).padStart(2, "0");
 
     const tanggal =
-        String(sekarang.getDate())
-        .padStart(2, "0");
+        String(
+            sekarang.getDate()
+        ).padStart(2, "0");
 
-    return tahun + "-" + bulan + "-" + tanggal;
+    return tahun + "-" +
+           bulan + "-" +
+           tanggal;
 }
 
 
@@ -361,18 +520,24 @@ function pilihKelas(kelas) {
 
 
     if (kelas === "X") {
+
         document.getElementById("btnX")
             .classList.add("kelas-aktif");
+
     }
 
     if (kelas === "XI") {
+
         document.getElementById("btnXI")
             .classList.add("kelas-aktif");
+
     }
 
     if (kelas === "XII") {
+
         document.getElementById("btnXII")
             .classList.add("kelas-aktif");
+
     }
 
 
@@ -380,17 +545,19 @@ function pilihKelas(kelas) {
         "daftarJadwal"
     ).style.display = "block";
 
+
     document.getElementById(
         "judulKelas"
     ).innerText =
         "Jadwal Kelas " + kelas;
+
 
     tampilkanJadwal();
 }
 
 
 /* ==================================================
-   TAMPILKAN JADWAL HARI INI
+   TAMPILKAN JADWAL
 ================================================== */
 
 function tampilkanJadwal() {
@@ -403,14 +570,16 @@ function tampilkanJadwal() {
 
 
     const jadwalHariIni =
-        jadwalUjian.filter(function(jadwal) {
+        jadwalUjian.filter(
+            function(jadwal) {
 
-            return (
-                jadwal.tanggal === hariIni &&
-                jadwal.kelas === kelasTerpilih
-            );
+                return (
+                    jadwal.tanggal === hariIni &&
+                    jadwal.kelas === kelasTerpilih
+                );
 
-        });
+            }
+        );
 
 
     const tempat =
@@ -433,116 +602,124 @@ function tampilkanJadwal() {
     }
 
 
-    jadwalHariIni.forEach(function(jadwal) {
+    jadwalHariIni.forEach(
+        function(jadwal) {
 
-        const mulai =
-            new Date(
-                jadwal.tanggal +
-                "T" +
-                jadwal.mulai
-            );
-
-        const selesai =
-            new Date(
-                jadwal.tanggal +
-                "T" +
-                jadwal.selesai
-            );
+            const mulai =
+                new Date(
+                    jadwal.tanggal +
+                    "T" +
+                    jadwal.mulai
+                );
 
 
-        let status;
-        let kelasStatus;
-        let tombol;
+            const selesai =
+                new Date(
+                    jadwal.tanggal +
+                    "T" +
+                    jadwal.selesai
+                );
 
 
-        if (sekarang < mulai) {
-
-            status =
-                "🔒 BELUM DIMULAI";
-
-            kelasStatus =
-                "belum";
-
-            tombol =
-                `<button disabled
-                    style="background:#98a2b3;">
-                    TERKUNCI
-                </button>`;
-
-        }
-
-        else if (
-            sekarang >= mulai &&
-            sekarang < selesai
-        ) {
-
-            status =
-                "🟢 UJIAN AKTIF";
-
-            kelasStatus =
-                "aktif";
+            let status;
+            let kelasStatus;
+            let tombol;
 
 
-            if (jadwal.link !== "#") {
+            if (sekarang < mulai) {
 
-                tombol =
-                    `<button
-                        onclick="bukaSoal('${jadwal.link}')">
-                        🔗 BUKA SOAL
-                    </button>`;
+                status =
+                    "🔒 BELUM DIMULAI";
 
-            } else {
+                kelasStatus =
+                    "belum";
 
                 tombol =
                     `<button disabled
                         style="background:#98a2b3;">
-                        LINK BELUM DIISI
+                        TERKUNCI
                     </button>`;
 
             }
 
+
+            else if (
+                sekarang >= mulai &&
+                sekarang < selesai
+            ) {
+
+                status =
+                    "🟢 UJIAN AKTIF";
+
+                kelasStatus =
+                    "aktif";
+
+
+                if (jadwal.link !== "#") {
+
+                    tombol =
+                        `<button
+                            onclick="bukaSoal('${jadwal.link}')">
+                            🔗 BUKA SOAL
+                        </button>`;
+
+                }
+
+                else {
+
+                    tombol =
+                        `<button disabled
+                            style="background:#98a2b3;">
+                            LINK BELUM DIISI
+                        </button>`;
+
+                }
+
+            }
+
+
+            else {
+
+                status =
+                    "🔴 UJIAN SELESAI";
+
+                kelasStatus =
+                    "selesai";
+
+                tombol =
+                    `<button disabled
+                        style="background:#98a2b3;">
+                        SUDAH DITUTUP
+                    </button>`;
+
+            }
+
+
+            tempat.innerHTML += `
+
+                <div class="jadwal">
+
+                    <div class="mapel">
+                        ${jadwal.mapel}
+                    </div>
+
+                    <div class="waktu">
+                        ⏰ ${jadwal.mulai}
+                        – ${jadwal.selesai}
+                    </div>
+
+                    <div class="status ${kelasStatus}">
+                        ${status}
+                    </div>
+
+                    ${tombol}
+
+                </div>
+
+            `;
+
         }
-
-        else {
-
-            status =
-                "🔴 UJIAN SELESAI";
-
-            kelasStatus =
-                "selesai";
-
-            tombol =
-                `<button disabled
-                    style="background:#98a2b3;">
-                    SUDAH DITUTUP
-                </button>`;
-        }
-
-
-        tempat.innerHTML += `
-
-            <div class="jadwal">
-
-                <div class="mapel">
-                    ${jadwal.mapel}
-                </div>
-
-                <div class="waktu">
-                    ⏰ ${jadwal.mulai}
-                    – ${jadwal.selesai}
-                </div>
-
-                <div class="status ${kelasStatus}">
-                    ${status}
-                </div>
-
-                ${tombol}
-
-            </div>
-
-        `;
-
-    });
+    );
 
 }
 
@@ -557,21 +734,76 @@ function bukaSoal(link) {
         return;
     }
 
-    window.open(link, "_blank");
+
+    /*
+       Tandai bahwa siswa sudah
+       masuk ke sesi ujian.
+    */
+
+    sessionStorage.setItem(
+        KUNCI_SESI,
+        "aktif"
+    );
+
+
+    /*
+       SOAL DIBUKA DI TAB YANG SAMA.
+       Dengan demikian ketika siswa
+       kembali menggunakan tombol BACK,
+       portal akan memeriksa sesi.
+    */
+
+    window.location.href = link;
 }
+
+
+/* ==================================================
+   DETEKSI KEMBALI KE PORTAL
+================================================== */
+
+window.addEventListener(
+    "pageshow",
+    function() {
+
+        /*
+           Jika halaman portal dimuat kembali
+           setelah siswa keluar dari halaman soal,
+           dan masih ada tanda sesi aktif,
+           tampilkan sesi terputus.
+        */
+
+        const sesi =
+            sessionStorage.getItem(
+                KUNCI_SESI
+            );
+
+
+        if (sesi === "aktif" && !qrUjian) {
+
+            tampilkanTerputus();
+
+        }
+
+    }
+);
 
 
 /* ==================================================
    UPDATE OTOMATIS
 ================================================== */
 
-setInterval(function() {
+setInterval(
+    function() {
 
-    if (kelasTerpilih) {
-        tampilkanJadwal();
-    }
+        if (kelasTerpilih) {
 
-}, 1000);
+            tampilkanJadwal();
+
+        }
+
+    },
+    1000
+);
 
 
 /* ==================================================
@@ -579,6 +811,8 @@ setInterval(function() {
 ================================================== */
 
 tampilkanTanggal();
+
+cekSesiLama();
 
 </script>
 
