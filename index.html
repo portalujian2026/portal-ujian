@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+content="width=device-width, initial-scale=1.0">
 
 <title>Portal Ujian</title>
 
@@ -69,11 +70,7 @@ button {
     font-size: 17px;
     font-weight: bold;
     cursor: pointer;
-    margin-top: 10px;
-}
-
-button:hover {
-    opacity: .9;
+    margin-top: 15px;
 }
 
 .info {
@@ -83,17 +80,6 @@ button:hover {
     border-radius: 12px;
     font-size: 14px;
     line-height: 1.5;
-}
-
-.soal {
-    margin-top: 20px;
-    padding: 20px;
-    background: #f7f8fa;
-    border-radius: 14px;
-}
-
-.pilihan {
-    margin: 14px 0;
 }
 
 .warning {
@@ -137,9 +123,7 @@ button:hover {
 
 <div class="kartu">
 
-<!-- =====================
-     HALAMAN MASUK
-===================== -->
+<!-- HALAMAN MASUK -->
 
 <div id="halamanAwal">
 
@@ -167,16 +151,14 @@ button:hover {
     </button>
 
     <div class="info">
-        Selama ujian berlangsung jangan meninggalkan
-        halaman ujian atau menggunakan mode layar belah.
+        Selama ujian berlangsung, tetap berada
+        pada lingkungan ujian.
     </div>
 
 </div>
 
 
-<!-- =====================
-     HALAMAN UJIAN
-===================== -->
+<!-- HALAMAN UJIAN -->
 
 <div id="halamanUjian">
 
@@ -191,24 +173,21 @@ button:hover {
         <b id="kodeAktif"></b>
     </p>
 
-    <p>
-        Sisa waktu:
-    </p>
+    <p>Sisa waktu:</p>
 
     <div class="timer" id="timer">
         30:00
     </div>
 
     <div class="warning">
-        ⚠️ Jangan pindah aplikasi, jangan pindah tab,
-        dan jangan menggunakan layar belah.
+        ⚠️ Jangan pindah aplikasi atau
+        meninggalkan halaman ujian.
     </div>
 
     <button onclick="bukaSoal()">
         🔗 BUKA SOAL
     </button>
 
-    
     <button onclick="selesaiUjian()">
         SELESAI UJIAN
     </button>
@@ -216,9 +195,7 @@ button:hover {
 </div>
 
 
-<!-- =====================
-     SESI TERPUTUS
-===================== -->
+<!-- SESI TERPUTUS -->
 
 <div id="halamanTerputus">
 
@@ -235,30 +212,21 @@ button:hover {
         </div>
 
         <div class="warning">
-
-            Anda telah meninggalkan lingkungan
-            ujian atau ukuran layar berubah.
+            Anda telah meninggalkan
+            lingkungan ujian.
 
             <br><br>
 
-            Silakan <b>scan QR ujian kembali</b>
+            Silakan scan QR ujian kembali
             untuk masuk.
-
         </div>
-
-        <p>
-            Jumlah kejadian:
-            <b id="jumlahKeluar">1</b>
-        </p>
 
     </div>
 
 </div>
 
 
-<!-- =====================
-     SELESAI
-===================== -->
+<!-- UJIAN SELESAI -->
 
 <div id="halamanSelesai">
 
@@ -283,43 +251,25 @@ button:hover {
 
 <script>
 
-/* ==========================
-   PENGATURAN
-========================== */
+/* PENGATURAN */
 
 const DURASI_UJIAN = 30 * 60;
 
+/* NANTI DIGANTI LINK SOAL GURU */
 
-/*
-   Untuk sementara link soal
-   masih menggunakan contoh.
-
-   Nanti kita ganti dengan
-   link Google Drive guru.
-*/
-
-const LINK_SOAL =
-"https://drive.google.com";
+const LINK_SOAL = "https://drive.google.com";
 
 
-/* ==========================
-   VARIABEL
-========================== */
+/* VARIABEL */
 
 let kodeUjian = null;
-
 let waktu = DURASI_UJIAN;
-
 let interval = null;
-
 let ujianAktif = false;
+let wakeLock = null;
 
-let jumlahKeluar = 0;
 
-
-/* ==========================
-   CEK KODE QR
-========================== */
+/* CEK KODE UJIAN */
 
 function cekKodeUjian() {
 
@@ -341,26 +291,45 @@ function cekKodeUjian() {
             "halamanTerputus"
         ).style.display = "block";
 
-        return false;
+        return;
     }
 
     document.getElementById(
         "kodeUjian"
     ).innerText = kodeUjian;
-
-    return true;
 }
 
 
-/* ==========================
-   MULAI UJIAN
-========================== */
+/* JAGA LAYAR TETAP MENYALA */
+
+async function aktifkanWakeLock() {
+
+    try {
+
+        if ("wakeLock" in navigator) {
+
+            wakeLock =
+                await navigator.wakeLock.request(
+                    "screen"
+                );
+
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Wake Lock tidak tersedia"
+        );
+
+    }
+}
+
+
+/* MULAI UJIAN */
 
 function mulaiUjian() {
 
-    if (!kodeUjian) {
-        return;
-    }
+    if (!kodeUjian) return;
 
     ujianAktif = true;
 
@@ -378,37 +347,31 @@ function mulaiUjian() {
         "kodeAktif"
     ).innerText = kodeUjian;
 
+    aktifkanWakeLock();
+
     jalankanTimer();
 }
 
 
-/* ==========================
-   TIMER
-========================== */
+/* TIMER */
 
 function jalankanTimer() {
 
     clearInterval(interval);
 
-    document.getElementById(
-        "timer"
-    ).innerText =
-        formatWaktu(waktu);
+    tampilkanWaktu();
 
     interval = setInterval(function() {
 
         waktu--;
 
-        document.getElementById(
-            "timer"
-        ).innerText =
-            formatWaktu(waktu);
+        tampilkanWaktu();
 
         if (waktu <= 0) {
 
-            clearInterval(interval);
+            waktu = 0;
 
-            ujianAktif = false;
+            tampilkanWaktu();
 
             selesaiKarenaWaktu();
 
@@ -418,9 +381,14 @@ function jalankanTimer() {
 }
 
 
-/* ==========================
-   FORMAT WAKTU
-========================== */
+function tampilkanWaktu() {
+
+    document.getElementById(
+        "timer"
+    ).innerText =
+        formatWaktu(waktu);
+}
+
 
 function formatWaktu(detik) {
 
@@ -430,15 +398,13 @@ function formatWaktu(detik) {
     const detikSisa =
         detik % 60;
 
-    return String(menit).padStart(2,"0")
+    return String(menit).padStart(2, "0")
         + ":"
-        + String(detikSisa).padStart(2,"0");
+        + String(detikSisa).padStart(2, "0");
 }
 
 
-/* ==========================
-   DETEKSI PINDAH TAB
-========================== */
+/* DETEKSI MENINGGALKAN HALAMAN */
 
 document.addEventListener(
     "visibilitychange",
@@ -449,9 +415,23 @@ document.addEventListener(
             ujianAktif
         ) {
 
-            putuskanSesi(
-                "Anda meninggalkan halaman ujian."
-            );
+            /*
+             Beri jeda agar perubahan singkat
+             tidak langsung memutus sesi.
+            */
+
+            setTimeout(function() {
+
+                if (
+                    document.hidden &&
+                    ujianAktif
+                ) {
+
+                    putuskanSesi();
+
+                }
+
+            }, 2000);
 
         }
 
@@ -459,86 +439,23 @@ document.addEventListener(
 );
 
 
-/* ==========================
-   DETEKSI UKURAN LAYAR
-========================== */
+/* PUTUSKAN SESI */
 
-let lebarAwal =
-    window.innerWidth;
+function putuskanSesi() {
 
-let tinggiAwal =
-    window.innerHeight;
-
-
-window.addEventListener(
-    "resize",
-    function() {
-
-        if (!ujianAktif) {
-            return;
-        }
-
-        const lebarSekarang =
-            window.innerWidth;
-
-        const tinggiSekarang =
-            window.innerHeight;
-
-
-        const perubahanLebar =
-            Math.abs(
-                lebarSekarang - lebarAwal
-            );
-
-        const perubahanTinggi =
-            Math.abs(
-                tinggiSekarang - tinggiAwal
-            );
-
-
-        /*
-          Jika perubahan ukuran
-          sangat besar, kita anggap
-          lingkungan layar berubah.
-        */
-
-        const ambang =
-            Math.max(
-                150,
-                lebarAwal * 0.25
-            );
-
-
-        if (
-            perubahanLebar > ambang ||
-            perubahanTinggi > ambang
-        ) {
-
-            putuskanSesi(
-                "Perubahan ukuran layar terdeteksi."
-            );
-
-        }
-
-    }
-);
-
-
-/* ==========================
-   PUTUSKAN SESI
-========================== */
-
-function putuskanSesi(pesan) {
-
-    if (!ujianAktif) {
-        return;
-    }
+    if (!ujianAktif) return;
 
     ujianAktif = false;
 
     clearInterval(interval);
 
-    jumlahKeluar++;
+    if (wakeLock) {
+
+        wakeLock.release()
+            .catch(function(){});
+
+        wakeLock = null;
+    }
 
     document.getElementById(
         "halamanUjian"
@@ -547,23 +464,14 @@ function putuskanSesi(pesan) {
     document.getElementById(
         "halamanTerputus"
     ).style.display = "block";
-
-    document.getElementById(
-        "jumlahKeluar"
-    ).innerText =
-        jumlahKeluar;
 }
 
 
-/* ==========================
-   BUKA SOAL
-========================== */
+/* BUKA SOAL */
 
 function bukaSoal() {
 
-    if (!ujianAktif) {
-        return;
-    }
+    if (!ujianAktif) return;
 
     window.open(
         LINK_SOAL,
@@ -572,9 +480,7 @@ function bukaSoal() {
 }
 
 
-/* ==========================
-   SELESAI MANUAL
-========================== */
+/* SELESAI MANUAL */
 
 function selesaiUjian() {
 
@@ -582,6 +488,14 @@ function selesaiUjian() {
 
     clearInterval(interval);
 
+    if (wakeLock) {
+
+        wakeLock.release()
+            .catch(function(){});
+
+        wakeLock = null;
+    }
+
     document.getElementById(
         "halamanUjian"
     ).style.display = "none";
@@ -592,12 +506,22 @@ function selesaiUjian() {
 }
 
 
-/* ==========================
-   SELESAI KARENA WAKTU
-========================== */
+/* WAKTU HABIS */
 
 function selesaiKarenaWaktu() {
 
+    ujianAktif = false;
+
+    clearInterval(interval);
+
+    if (wakeLock) {
+
+        wakeLock.release()
+            .catch(function(){});
+
+        wakeLock = null;
+    }
+
     document.getElementById(
         "halamanUjian"
     ).style.display = "none";
@@ -608,9 +532,7 @@ function selesaiKarenaWaktu() {
 }
 
 
-/* ==========================
-   MULAI
-========================== */
+/* MULAI */
 
 cekKodeUjian();
 
