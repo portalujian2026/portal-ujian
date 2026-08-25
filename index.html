@@ -2,14 +2,11 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>Portal Ujian</title>
+<title>Ruang Ujian</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
@@ -19,23 +16,22 @@ body {
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background: #eef2f7;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     color: #172033;
 }
 
 .kartu {
-    width: 92%;
-    max-width: 520px;
+    width: 94%;
+    max-width: 600px;
+    margin: 30px auto;
     background: white;
     border-radius: 20px;
-    padding: 30px;
+    padding: 25px;
     box-shadow: 0 10px 30px rgba(0,0,0,.12);
 }
 
-h1, h2 {
+h1 {
     text-align: center;
+    margin-bottom: 5px;
 }
 
 .sub {
@@ -43,34 +39,88 @@ h1, h2 {
     color: #667085;
 }
 
-.status {
+.tanggal {
     text-align: center;
     margin: 20px 0;
-    padding: 12px;
+    padding: 14px;
+    background: #eef4ff;
     border-radius: 12px;
-    background: #e8f7ee;
-    color: #147a3d;
     font-weight: bold;
 }
 
-.timer {
-    text-align: center;
-    font-size: 46px;
-    font-weight: bold;
-    margin: 25px 0;
+.pilih-kelas {
+    display: flex;
+    gap: 8px;
+    margin: 15px 0 25px;
+}
+
+.pilih-kelas button {
+    flex: 1;
+    margin: 0;
+    padding: 12px 5px;
+    font-size: 15px;
 }
 
 button {
     width: 100%;
-    padding: 15px;
+    padding: 14px;
     border: 0;
     border-radius: 12px;
     background: #1769e0;
     color: white;
-    font-size: 17px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+.kelas-aktif {
+    background: #0b7a3b !important;
+}
+
+.jadwal {
+    border: 1px solid #e4e7ec;
+    border-radius: 15px;
+    padding: 18px;
     margin-top: 15px;
+}
+
+.mapel {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.waktu {
+    color: #667085;
+    margin-bottom: 12px;
+}
+
+.status {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.belum {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.aktif {
+    background: #e8f7ee;
+    color: #147a3d;
+}
+
+.selesai {
+    background: #fde8e8;
+    color: #b42318;
 }
 
 .info {
@@ -82,40 +132,15 @@ button {
     line-height: 1.5;
 }
 
-.warning {
-    padding: 15px;
-    background: #fff3cd;
-    border-radius: 12px;
-    margin: 20px 0;
-    color: #664d03;
-}
-
-.danger {
+.kosong {
     text-align: center;
-    padding: 15px;
-    background: #fde8e8;
-    color: #b42318;
-    border-radius: 12px;
+    padding: 30px 10px;
+    color: #667085;
 }
 
-.center {
-    text-align: center;
-}
-
-#halamanUjian,
-#halamanTerputus,
-#halamanSelesai {
+#daftarJadwal {
     display: none;
 }
-
-.qr-info {
-    padding: 15px;
-    background: #eef4ff;
-    border-radius: 12px;
-    margin: 15px 0;
-    font-size: 14px;
-}
-
 </style>
 </head>
 
@@ -123,417 +148,437 @@ button {
 
 <div class="kartu">
 
-<!-- HALAMAN MASUK -->
-
-<div id="halamanAwal">
-
     <h1>🏫 RUANG UJIAN</h1>
 
     <div class="sub">
         Portal Ujian Sekolah
     </div>
 
-    <div class="status">
-        🟢 PORTAL AKTIF
+    <div class="tanggal" id="tanggalHariIni">
+        Memuat tanggal...
     </div>
 
-    <p>
-        <b>Ujian:</b> Uji Coba Portal
-    </p>
+    <h3>Pilih Kelas</h3>
 
-    <div class="qr-info">
-        <b>Kode Ujian:</b>
-        <span id="kodeUjian">-</span>
+    <div class="pilih-kelas">
+
+        <button onclick="pilihKelas('X')" id="btnX">
+            KELAS X
+        </button>
+
+        <button onclick="pilihKelas('XI')" id="btnXI">
+            KELAS XI
+        </button>
+
+        <button onclick="pilihKelas('XII')" id="btnXII">
+            KELAS XII
+        </button>
+
     </div>
 
-    <button onclick="mulaiUjian()">
-        MULAI UJIAN
-    </button>
+    <div id="daftarJadwal">
+
+        <h3 id="judulKelas"></h3>
+
+        <div id="isiJadwal"></div>
+
+    </div>
 
     <div class="info">
-        Selama ujian berlangsung, tetap berada
-        pada lingkungan ujian.
+        <b>Informasi:</b><br><br>
+
+        🔒 Belum dimulai = ujian belum dapat dibuka.<br>
+        🟢 Ujian aktif = soal dapat dibuka.<br>
+        🔴 Selesai = waktu ujian sudah habis dan soal tidak dapat dibuka.
     </div>
 
 </div>
-
-
-<!-- HALAMAN UJIAN -->
-
-<div id="halamanUjian">
-
-    <h2>📝 UJIAN BERLANGSUNG</h2>
-
-    <div class="status">
-        🔒 SESI UJIAN AKTIF
-    </div>
-
-    <p>
-        Kode ujian:
-        <b id="kodeAktif"></b>
-    </p>
-
-    <p>Sisa waktu:</p>
-
-    <div class="timer" id="timer">
-        30:00
-    </div>
-
-    <div class="warning">
-        ⚠️ Jangan pindah aplikasi atau
-        meninggalkan halaman ujian.
-    </div>
-
-    <button onclick="bukaSoal()">
-        🔗 BUKA SOAL
-    </button>
-
-    <button onclick="selesaiUjian()">
-        SELESAI UJIAN
-    </button>
-
-</div>
-
-
-<!-- SESI TERPUTUS -->
-
-<div id="halamanTerputus">
-
-    <div class="center">
-
-        <div style="font-size:60px;">
-            🔒
-        </div>
-
-        <h2>SESI TERPUTUS</h2>
-
-        <div class="danger">
-            Akses ujian telah dihentikan.
-        </div>
-
-        <div class="warning">
-            Anda telah meninggalkan
-            lingkungan ujian.
-
-            <br><br>
-
-            Silakan scan QR ujian kembali
-            untuk masuk.
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- UJIAN SELESAI -->
-
-<div id="halamanSelesai">
-
-    <div class="center">
-
-        <div style="font-size:60px;">
-            ✅
-        </div>
-
-        <h2>UJIAN SELESAI</h2>
-
-        <p>
-            Sesi ujian telah ditutup.
-        </p>
-
-    </div>
-
-</div>
-
-</div>
-
 
 <script>
 
-/* PENGATURAN */
+/* ==================================================
+   DATA JADWAL UJIAN
+   NANTI BAGIAN INI YANG MUDAH KITA EDIT
+================================================== */
 
-const DURASI_UJIAN = 30 * 60;
+const jadwalUjian = [
 
-/* NANTI DIGANTI LINK SOAL GURU */
+    /*
+    SENIN
+    */
 
-const LINK_SOAL = "https://forms.gle/1GCPekfDyv4WtfbW6";
+    {
+        tanggal: "2026-08-31",
+        kelas: "X",
+        mapel: "Bahasa Indonesia",
+        mulai: "08:00",
+        selesai: "09:00",
+        link: "#"
+    },
 
-/* VARIABEL */
+    {
+        tanggal: "2026-08-31",
+        kelas: "XI",
+        mapel: "Bahasa Indonesia",
+        mulai: "08:00",
+        selesai: "09:00",
+        link: "#"
+    },
 
-let kodeUjian = null;
-let waktu = DURASI_UJIAN;
-let interval = null;
-let ujianAktif = false;
-let wakeLock = null;
+    {
+        tanggal: "2026-08-31",
+        kelas: "XII",
+        mapel: "Bahasa Indonesia",
+        mulai: "08:00",
+        selesai: "09:00",
+        link: "#"
+    },
+
+    {
+        tanggal: "2026-08-31",
+        kelas: "X",
+        mapel: "Bahasa Inggris",
+        mulai: "10:00",
+        selesai: "11:00",
+        link: "#"
+    },
+
+    {
+        tanggal: "2026-08-31",
+        kelas: "XI",
+        mapel: "Matematika",
+        mulai: "10:00",
+        selesai: "11:00",
+        link: "#"
+    },
 
 
-/* CEK KODE UJIAN */
+    /*
+    SELASA
+    */
 
-function cekKodeUjian() {
+    {
+        tanggal: "2026-09-01",
+        kelas: "X",
+        mapel: "Sejarah",
+        mulai: "08:00",
+        selesai: "09:00",
+        link: "#"
+    },
 
-    const parameter =
-        new URLSearchParams(
-            window.location.search
+    {
+        tanggal: "2026-09-01",
+        kelas: "XI",
+        mapel: "Sejarah",
+        mulai: "08:00",
+        selesai: "09:00",
+        link: "#"
+    },
+
+    {
+        tanggal: "2026-09-01",
+        kelas: "XII",
+        mapel: "Matematika",
+        mulai: "10:00",
+        selesai: "11:30",
+        link: "#"
+    }
+
+];
+
+
+/* ==================================================
+   VARIABEL
+================================================== */
+
+let kelasTerpilih = null;
+
+
+/* ==================================================
+   TANGGAL HARI INI
+================================================== */
+
+function tanggalHariIni() {
+
+    const sekarang = new Date();
+
+    const tahun =
+        sekarang.getFullYear();
+
+    const bulan =
+        String(sekarang.getMonth() + 1)
+        .padStart(2, "0");
+
+    const tanggal =
+        String(sekarang.getDate())
+        .padStart(2, "0");
+
+    return tahun + "-" + bulan + "-" + tanggal;
+}
+
+
+/* ==================================================
+   FORMAT TANGGAL
+================================================== */
+
+function tampilkanTanggal() {
+
+    const sekarang = new Date();
+
+    const pilihan = {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    };
+
+    document.getElementById(
+        "tanggalHariIni"
+    ).innerText =
+        sekarang.toLocaleDateString(
+            "id-ID",
+            pilihan
+        );
+}
+
+
+/* ==================================================
+   PILIH KELAS
+================================================== */
+
+function pilihKelas(kelas) {
+
+    kelasTerpilih = kelas;
+
+    document.getElementById("btnX")
+        .classList.remove("kelas-aktif");
+
+    document.getElementById("btnXI")
+        .classList.remove("kelas-aktif");
+
+    document.getElementById("btnXII")
+        .classList.remove("kelas-aktif");
+
+
+    if (kelas === "X") {
+        document.getElementById("btnX")
+            .classList.add("kelas-aktif");
+    }
+
+    if (kelas === "XI") {
+        document.getElementById("btnXI")
+            .classList.add("kelas-aktif");
+    }
+
+    if (kelas === "XII") {
+        document.getElementById("btnXII")
+            .classList.add("kelas-aktif");
+    }
+
+
+    document.getElementById(
+        "daftarJadwal"
+    ).style.display = "block";
+
+    document.getElementById(
+        "judulKelas"
+    ).innerText =
+        "Jadwal Kelas " + kelas;
+
+    tampilkanJadwal();
+}
+
+
+/* ==================================================
+   TAMPILKAN JADWAL HARI INI
+================================================== */
+
+function tampilkanJadwal() {
+
+    const hariIni =
+        tanggalHariIni();
+
+    const sekarang =
+        new Date();
+
+
+    const jadwalHariIni =
+        jadwalUjian.filter(function(jadwal) {
+
+            return (
+                jadwal.tanggal === hariIni &&
+                jadwal.kelas === kelasTerpilih
+            );
+
+        });
+
+
+    const tempat =
+        document.getElementById(
+            "isiJadwal"
         );
 
-    kodeUjian =
-        parameter.get("ujian");
 
-    if (!kodeUjian) {
+    tempat.innerHTML = "";
 
-        document.getElementById(
-            "halamanAwal"
-        ).style.display = "none";
 
-        document.getElementById(
-            "halamanTerputus"
-        ).style.display = "block";
+    if (jadwalHariIni.length === 0) {
+
+        tempat.innerHTML =
+            `<div class="kosong">
+                Tidak ada ujian untuk kelas ini hari ini.
+            </div>`;
 
         return;
     }
 
-    document.getElementById(
-        "kodeUjian"
-    ).innerText = kodeUjian;
-}
+
+    jadwalHariIni.forEach(function(jadwal) {
+
+        const mulai =
+            new Date(
+                jadwal.tanggal +
+                "T" +
+                jadwal.mulai
+            );
+
+        const selesai =
+            new Date(
+                jadwal.tanggal +
+                "T" +
+                jadwal.selesai
+            );
 
 
-/* JAGA LAYAR TETAP MENYALA */
-
-async function aktifkanWakeLock() {
-
-    try {
-
-        if ("wakeLock" in navigator) {
-
-            wakeLock =
-                await navigator.wakeLock.request(
-                    "screen"
-                );
-
-        }
-
-    } catch (error) {
-
-        console.log(
-            "Wake Lock tidak tersedia"
-        );
-
-    }
-}
+        let status;
+        let kelasStatus;
+        let tombol;
 
 
-/* MULAI UJIAN */
+        if (sekarang < mulai) {
 
-function mulaiUjian() {
+            status =
+                "🔒 BELUM DIMULAI";
 
-    if (!kodeUjian) return;
+            kelasStatus =
+                "belum";
 
-    ujianAktif = true;
-
-    waktu = DURASI_UJIAN;
-
-    document.getElementById(
-        "halamanAwal"
-    ).style.display = "none";
-
-    document.getElementById(
-        "halamanUjian"
-    ).style.display = "block";
-
-    document.getElementById(
-        "kodeAktif"
-    ).innerText = kodeUjian;
-
-    aktifkanWakeLock();
-
-    jalankanTimer();
-}
-
-
-/* TIMER */
-
-function jalankanTimer() {
-
-    clearInterval(interval);
-
-    tampilkanWaktu();
-
-    interval = setInterval(function() {
-
-        waktu--;
-
-        tampilkanWaktu();
-
-        if (waktu <= 0) {
-
-            waktu = 0;
-
-            tampilkanWaktu();
-
-            selesaiKarenaWaktu();
+            tombol =
+                `<button disabled
+                    style="background:#98a2b3;">
+                    TERKUNCI
+                </button>`;
 
         }
 
-    }, 1000);
-}
-
-
-function tampilkanWaktu() {
-
-    document.getElementById(
-        "timer"
-    ).innerText =
-        formatWaktu(waktu);
-}
-
-
-function formatWaktu(detik) {
-
-    const menit =
-        Math.floor(detik / 60);
-
-    const detikSisa =
-        detik % 60;
-
-    return String(menit).padStart(2, "0")
-        + ":"
-        + String(detikSisa).padStart(2, "0");
-}
-
-
-/* DETEKSI MENINGGALKAN HALAMAN */
-
-document.addEventListener(
-    "visibilitychange",
-    function() {
-
-        if (
-            document.hidden &&
-            ujianAktif
+        else if (
+            sekarang >= mulai &&
+            sekarang < selesai
         ) {
 
-            /*
-             Beri jeda agar perubahan singkat
-             tidak langsung memutus sesi.
-            */
+            status =
+                "🟢 UJIAN AKTIF";
 
-            setTimeout(function() {
+            kelasStatus =
+                "aktif";
 
-                if (
-                    document.hidden &&
-                    ujianAktif
-                ) {
 
-                    putuskanSesi();
+            if (jadwal.link !== "#") {
 
-                }
+                tombol =
+                    `<button
+                        onclick="bukaSoal('${jadwal.link}')">
+                        🔗 BUKA SOAL
+                    </button>`;
 
-            }, 2000);
+            } else {
+
+                tombol =
+                    `<button disabled
+                        style="background:#98a2b3;">
+                        LINK BELUM DIISI
+                    </button>`;
+
+            }
 
         }
 
-    }
-);
+        else {
+
+            status =
+                "🔴 UJIAN SELESAI";
+
+            kelasStatus =
+                "selesai";
+
+            tombol =
+                `<button disabled
+                    style="background:#98a2b3;">
+                    SUDAH DITUTUP
+                </button>`;
+        }
 
 
-/* PUTUSKAN SESI */
+        tempat.innerHTML += `
 
-function putuskanSesi() {
+            <div class="jadwal">
 
-    if (!ujianAktif) return;
+                <div class="mapel">
+                    ${jadwal.mapel}
+                </div>
 
-    ujianAktif = false;
+                <div class="waktu">
+                    ⏰ ${jadwal.mulai}
+                    – ${jadwal.selesai}
+                </div>
 
-    clearInterval(interval);
+                <div class="status ${kelasStatus}">
+                    ${status}
+                </div>
 
-    if (wakeLock) {
+                ${tombol}
 
-        wakeLock.release()
-            .catch(function(){});
+            </div>
 
-        wakeLock = null;
-    }
+        `;
 
-    document.getElementById(
-        "halamanUjian"
-    ).style.display = "none";
+    });
 
-    document.getElementById(
-        "halamanTerputus"
-    ).style.display = "block";
 }
 
 
-/* BUKA SOAL */
+/* ==================================================
+   BUKA SOAL
+================================================== */
 
-function bukaSoal() {
+function bukaSoal(link) {
 
-    if (!ujianAktif) return;
-
-    window.open(
-        LINK_SOAL,
-        "_blank"
-    );
-}
-
-
-/* SELESAI MANUAL */
-
-function selesaiUjian() {
-
-    ujianAktif = false;
-
-    clearInterval(interval);
-
-    if (wakeLock) {
-
-        wakeLock.release()
-            .catch(function(){});
-
-        wakeLock = null;
+    if (link === "#") {
+        return;
     }
 
-    document.getElementById(
-        "halamanUjian"
-    ).style.display = "none";
-
-    document.getElementById(
-        "halamanSelesai"
-    ).style.display = "block";
+    window.open(link, "_blank");
 }
 
 
-/* WAKTU HABIS */
+/* ==================================================
+   UPDATE OTOMATIS
+================================================== */
 
-function selesaiKarenaWaktu() {
+setInterval(function() {
 
-    ujianAktif = false;
-
-    clearInterval(interval);
-
-    if (wakeLock) {
-
-        wakeLock.release()
-            .catch(function(){});
-
-        wakeLock = null;
+    if (kelasTerpilih) {
+        tampilkanJadwal();
     }
 
-    document.getElementById(
-        "halamanUjian"
-    ).style.display = "none";
-
-    document.getElementById(
-        "halamanSelesai"
-    ).style.display = "block";
-}
+}, 1000);
 
 
-/* MULAI */
+/* ==================================================
+   MULAI
+================================================== */
 
-cekKodeUjian();
+tampilkanTanggal();
 
 </script>
 
