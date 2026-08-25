@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Portal Ujian</title>
 
 <style>
@@ -90,20 +89,7 @@ button:hover {
 }
 
 .pilihan {
-    margin: 12px 0;
-}
-
-#halamanUjian,
-#halamanTerputus {
-    display: none;
-}
-
-.terputus {
-    text-align: center;
-}
-
-.terputus .icon {
-    font-size: 60px;
+    margin: 14px 0;
 }
 
 .warning {
@@ -113,6 +99,32 @@ button:hover {
     margin: 20px 0;
     color: #664d03;
 }
+
+.danger {
+    text-align: center;
+    padding: 15px;
+    background: #fde8e8;
+    color: #b42318;
+    border-radius: 12px;
+}
+
+#halamanUjian,
+#halamanTerputus,
+#halamanSelesai {
+    display: none;
+}
+
+.center {
+    text-align: center;
+}
+
+.qr-info {
+    padding: 15px;
+    background: #eef4ff;
+    border-radius: 12px;
+    margin: 15px 0;
+    font-size: 14px;
+}
 </style>
 </head>
 
@@ -120,179 +132,286 @@ button:hover {
 
 <div class="kartu">
 
-    <!-- HALAMAN AWAL -->
+<!-- =========================
+     HALAMAN MASUK
+========================= -->
 
-    <div id="halamanAwal">
+<div id="halamanAwal">
 
-        <h1>🏫 RUANG UJIAN</h1>
+    <h1>🏫 RUANG UJIAN</h1>
 
-        <div class="sub">
-            Prototype Sistem Ujian
-        </div>
+    <div class="sub">
+        Portal Ujian Sekolah
+    </div>
 
-        <div class="status">
-            🟢 UJIAN AKTIF
-        </div>
+    <div class="status">
+        🟢 UJIAN AKTIF
+    </div>
+
+    <p>
+        <b>Ujian:</b> Uji Coba Portal
+    </p>
+
+    <div class="qr-info">
+        <b>Kode Ujian:</b>
+        <span id="kodeUjian">UJIAN001</span>
+    </div>
+
+    <p>
+        Portal ini dibuka melalui QR ujian.
+    </p>
+
+    <button onclick="mulaiUjian()">
+        MULAI UJIAN
+    </button>
+
+    <div class="info">
+        Setelah ujian dimulai, sistem akan mendeteksi
+        apabila halaman ujian ditinggalkan.
+    </div>
+
+</div>
+
+
+<!-- =========================
+     HALAMAN UJIAN
+========================= -->
+
+<div id="halamanUjian">
+
+    <h2>📝 UJIAN BERLANGSUNG</h2>
+
+    <div class="status">
+        🔒 SESI UJIAN AKTIF
+    </div>
+
+    <p>
+        Kode ujian:
+        <b id="kodeAktif"></b>
+    </p>
+
+    <p>
+        Sisa waktu:
+    </p>
+
+    <div class="timer" id="timer">
+        30:00
+    </div>
+
+    <div class="soal">
 
         <p>
-            <b>Ujian:</b> Uji Coba Portal
+            <b>
+            1. Berapakah hasil dari 2 + 2?
+            </b>
         </p>
 
-        <p>
-            Silakan tekan tombol di bawah untuk memulai.
-        </p>
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                A. 3
+            </label>
+        </div>
 
-        <button onclick="mulaiUjian()">
-            MULAI UJIAN
-        </button>
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                B. 4
+            </label>
+        </div>
 
-        <div class="info">
-            Setelah ujian dimulai, halaman akan memantau
-            apakah siswa meninggalkan halaman ujian.
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                C. 5
+            </label>
+        </div>
+
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                D. 6
+            </label>
         </div>
 
     </div>
 
+    <button onclick="selesaiUjian()">
+        SELESAI UJIAN
+    </button>
 
-    <!-- HALAMAN UJIAN -->
+</div>
 
-    <div id="halamanUjian">
 
-        <h2>📝 UJIAN BERLANGSUNG</h2>
+<!-- =========================
+     SESI TERPUTUS
+========================= -->
 
-        <div class="status">
-            🔒 SESI UJIAN AKTIF
+<div id="halamanTerputus">
+
+    <div class="center">
+
+        <div style="font-size:60px;">
+            🔒
+        </div>
+
+        <h2>SESI TERPUTUS</h2>
+
+        <div class="danger">
+            Anda telah meninggalkan halaman ujian.
+        </div>
+
+        <div class="warning">
+
+            <b>Akses ujian dihentikan.</b>
+
+            <br><br>
+
+            Silakan scan QR ujian kembali
+            untuk memulai sesi baru.
+
         </div>
 
         <p>
-            Sisa waktu:
+            Jumlah keluar dari sesi:
+            <b id="jumlahKeluar">1</b>
         </p>
 
-        <div class="timer" id="timer">
-            30:00
-        </div>
-
-        <div class="soal">
-
-            <p>
-                <b>
-                1. Berapakah hasil dari 2 + 2?
-                </b>
-            </p>
-
-            <div class="pilihan">
-                <label>
-                    <input type="radio" name="jawaban">
-                    A. 3
-                </label>
-            </div>
-
-            <div class="pilihan">
-                <label>
-                    <input type="radio" name="jawaban">
-                    B. 4
-                </label>
-            </div>
-
-            <div class="pilihan">
-                <label>
-                    <input type="radio" name="jawaban">
-                    C. 5
-                </label>
-            </div>
-
-            <div class="pilihan">
-                <label>
-                    <input type="radio" name="jawaban">
-                    D. 6
-                </label>
-            </div>
-
-        </div>
-
-        <button onclick="selesaiUjian()">
-            SELESAI UJIAN
-        </button>
-
-    </div>
-
-
-    <!-- HALAMAN SESI TERPUTUS -->
-
-    <div id="halamanTerputus">
-
-        <div class="terputus">
-
-            <div class="icon">
-                🔒
-            </div>
-
-            <h2>SESI TERPUTUS</h2>
-
-            <div class="warning">
-                Anda telah meninggalkan halaman ujian.
-            </div>
-
-            <p>
-                Untuk keamanan ujian, sesi ini telah dihentikan.
-            </p>
-
-            <p>
-                Silakan melakukan proses masuk kembali
-                menggunakan QR ujian.
-            </p>
-
-            <button onclick="kembaliKeAwal()">
-                KEMBALI KE HALAMAN MASUK
-            </button>
-
-        </div>
+        <p>
+            <b>
+            Jangan gunakan tombol kembali untuk masuk
+            ke halaman soal.
+            </b>
+        </p>
 
     </div>
 
 </div>
 
 
+<!-- =========================
+     SELESAI
+========================= -->
+
+<div id="halamanSelesai">
+
+    <div class="center">
+
+        <div style="font-size:60px;">
+            ✅
+        </div>
+
+        <h2>UJIAN SELESAI</h2>
+
+        <p>
+            Jawaban Anda telah selesai dikerjakan.
+        </p>
+
+        <div class="status">
+            Sesi ujian telah ditutup.
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+
 <script>
 
-let waktu = 30 * 60;
+/* =========================
+   PENGATURAN
+========================= */
+
+const PARAMETER_UJIAN = "ujian";
+
+const KODE_DEFAULT = "UJIAN001";
+
+const DURASI_UJIAN = 30 * 60;
+
+
+/* =========================
+   VARIABEL
+========================= */
+
+let kodeUjian = null;
+
+let waktu = DURASI_UJIAN;
+
 let interval = null;
+
 let ujianAktif = false;
-let sesiTerputus = false;
+
+let jumlahKeluar = 0;
 
 
-/* ==============================
-   FORMAT TIMER
-============================== */
+/* =========================
+   CEK QR / LINK UJIAN
+========================= */
 
-function formatWaktu(detik) {
+function cekKodeUjian() {
 
-    let menit = Math.floor(detik / 60);
+    const parameter =
+        new URLSearchParams(window.location.search);
 
-    let detikSisa = detik % 60;
+    kodeUjian =
+        parameter.get(PARAMETER_UJIAN);
 
-    return String(menit).padStart(2, "0")
-        + ":"
-        + String(detikSisa).padStart(2, "0");
+    if (!kodeUjian) {
+
+        document.getElementById(
+            "halamanAwal"
+        ).style.display = "none";
+
+        document.getElementById(
+            "halamanTerputus"
+        ).style.display = "block";
+
+        document.getElementById(
+            "jumlahKeluar"
+        ).innerText = "0";
+
+        return false;
+    }
+
+    document.getElementById(
+        "kodeUjian"
+    ).innerText = kodeUjian;
+
+    return true;
 }
 
 
-/* ==============================
+/* =========================
    MULAI UJIAN
-============================== */
+========================= */
 
 function mulaiUjian() {
 
+    if (!kodeUjian) {
+        return;
+    }
+
     ujianAktif = true;
-    sesiTerputus = false;
 
-    document.getElementById("halamanAwal").style.display = "none";
+    waktu = DURASI_UJIAN;
 
-    document.getElementById("halamanUjian").style.display = "block";
+    document.getElementById(
+        "halamanAwal"
+    ).style.display = "none";
 
-    waktu = 30 * 60;
+    document.getElementById(
+        "halamanUjian"
+    ).style.display = "block";
 
-    document.getElementById("timer").innerText =
+    document.getElementById(
+        "kodeAktif"
+    ).innerText = kodeUjian;
+
+    document.getElementById(
+        "timer"
+    ).innerText =
         formatWaktu(waktu);
 
     clearInterval(interval);
@@ -301,7 +420,9 @@ function mulaiUjian() {
 
         waktu--;
 
-        document.getElementById("timer").innerText =
+        document.getElementById(
+            "timer"
+        ).innerText =
             formatWaktu(waktu);
 
         if (waktu <= 0) {
@@ -310,18 +431,35 @@ function mulaiUjian() {
 
             ujianAktif = false;
 
-            alert("Waktu ujian telah habis.");
+            selesaiKarenaWaktu();
 
-            kembaliKeAwal();
         }
 
     }, 1000);
 }
 
 
-/* ==============================
-   DETEKSI HALAMAN DITINGGALKAN
-============================== */
+/* =========================
+   FORMAT TIMER
+========================= */
+
+function formatWaktu(detik) {
+
+    const menit =
+        Math.floor(detik / 60);
+
+    const detikSisa =
+        detik % 60;
+
+    return String(menit).padStart(2,"0")
+        + ":"
+        + String(detikSisa).padStart(2,"0");
+}
+
+
+/* =========================
+   DETEKSI KELUAR
+========================= */
 
 document.addEventListener(
     "visibilitychange",
@@ -329,15 +467,19 @@ document.addEventListener(
 
         if (
             document.hidden &&
-            ujianAktif &&
-            !sesiTerputus
+            ujianAktif
         ) {
 
-            sesiTerputus = true;
+            jumlahKeluar++;
 
-            clearInterval(interval);
+            localStorage.setItem(
+                "jumlahKeluar",
+                jumlahKeluar
+            );
 
             ujianAktif = false;
+
+            clearInterval(interval);
 
             document.getElementById(
                 "halamanUjian"
@@ -346,33 +488,22 @@ document.addEventListener(
             document.getElementById(
                 "halamanTerputus"
             ).style.display = "block";
+
+            document.getElementById(
+                "jumlahKeluar"
+            ).innerText =
+                jumlahKeluar;
         }
 
     }
 );
 
 
-/* ==============================
-   SELESAI UJIAN
-============================== */
+/* =========================
+   SELESAI MANUAL
+========================= */
 
 function selesaiUjian() {
-
-    clearInterval(interval);
-
-    ujianAktif = false;
-
-    alert("Ujian selesai.");
-
-    kembaliKeAwal();
-}
-
-
-/* ==============================
-   KEMBALI
-============================== */
-
-function kembaliKeAwal() {
 
     clearInterval(interval);
 
@@ -383,13 +514,32 @@ function kembaliKeAwal() {
     ).style.display = "none";
 
     document.getElementById(
-        "halamanTerputus"
+        "halamanSelesai"
+    ).style.display = "block";
+}
+
+
+/* =========================
+   SELESAI KARENA WAKTU
+========================= */
+
+function selesaiKarenaWaktu() {
+
+    document.getElementById(
+        "halamanUjian"
     ).style.display = "none";
 
     document.getElementById(
-        "halamanAwal"
+        "halamanSelesai"
     ).style.display = "block";
 }
+
+
+/* =========================
+   JALANKAN SAAT DIBUKA
+========================= */
+
+cekKodeUjian();
 
 </script>
 
