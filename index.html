@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ruang Ujian</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    color: #172033;
+}
+
+.kartu {
+    width: 92%;
+    max-width: 500px;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 8px;
+}
+
+.keterangan {
+    color: #667085;
+    margin-bottom: 25px;
+}
+
+.status {
+    display: inline-block;
+    background: #e8f7ee;
+    color: #147a3d;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.timer {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: #1769e0;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1255b5;
+}
+
+.info {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f5f6f8;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #475467;
+}
+
+#soal {
+    display: none;
+    text-align: left;
+}
+
+.pilihan {
+    margin: 12px 0;
+}
+
+#selesai {
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="kartu">
+
+    <div id="halamanAwal">
+
+        <h1>🏫 RUANG UJIAN</h1>
+
+        <div class="keterangan">
+            Prototype Portal Ujian
+        </div>
+
+        <div class="status">
+            🟢 UJIAN AKTIF
+        </div>
+
+        <p>
+            <b>Ujian:</b> Uji Coba ExamBro
+        </p>
+
+        <p>
+            Silakan tekan tombol untuk memulai.
+        </p>
+
+        <div class="timer" id="timer">
+            30:00
+        </div>
+
+        <button onclick="mulaiUjian()">
+            MULAI UJIAN
+        </button>
+
+        <div class="info">
+            Halaman ini adalah prototype untuk menguji
+            apakah portal dapat dibuka melalui ExamBro.
+        </div>
+
+    </div>
+
+
+    <div id="soal">
+
+        <h2>📝 Uji Coba Soal</h2>
+
+        <p>
+            <b>Sisa waktu:</b>
+            <span id="timerSoal">30:00</span>
+        </p>
+
+        <hr>
+
+        <p>
+            <b>1. Berapakah hasil dari 2 + 2?</b>
+        </p>
+
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                A. 3
+            </label>
+        </div>
+
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                B. 4
+            </label>
+        </div>
+
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                C. 5
+            </label>
+        </div>
+
+        <div class="pilihan">
+            <label>
+                <input type="radio" name="jawaban">
+                D. 6
+            </label>
+        </div>
+
+        <button id="selesai" onclick="selesaiUjian()">
+            SELESAI UJIAN
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let waktu = 30 * 60;
+let interval;
+
+
+function formatWaktu(detik) {
+
+    let menit = Math.floor(detik / 60);
+
+    let detikSisa = detik % 60;
+
+    menit = menit.toString().padStart(2, "0");
+
+    detikSisa = detikSisa.toString().padStart(2, "0");
+
+    return menit + ":" + detikSisa;
+}
+
+
+function mulaiUjian() {
+
+    document.getElementById("halamanAwal").style.display = "none";
+
+    document.getElementById("soal").style.display = "block";
+
+    interval = setInterval(function() {
+
+        waktu--;
+
+        document.getElementById("timerSoal").innerText =
+            formatWaktu(waktu);
+
+        if (waktu <= 0) {
+
+            clearInterval(interval);
+
+            alert("Waktu ujian telah habis.");
+
+            document.getElementById("soal").style.display = "none";
+
+            document.getElementById("halamanAwal").style.display = "block";
+
+        }
+
+    }, 1000);
+
+}
+
+
+function selesaiUjian() {
+
+    clearInterval(interval);
+
+    alert("Ujian selesai.");
+
+    location.reload();
+
+}
+
+</script>
+
+</body>
+</html>
